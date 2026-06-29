@@ -26,9 +26,5 @@ public interface IGenericRepository<TEntity> where TEntity  : BaseEntity , new()
     Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, bool trackin = false, CancellationToken ct = default);
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken ct = default);
 
-    #region --
-    //Task<TEntity?> GetByIdIncludingDeletedAsync(int id, CancellationToken ct = default);
-    //Task<bool> ExistAsync(int id, CancellationToken cancellationToken = default);
-    //Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default); 
-    #endregion
+    
 }
