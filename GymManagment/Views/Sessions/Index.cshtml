@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SessionViewModel>
+@model IEnumerable<SessionViewModel>
 
 @{
     ViewData["Title"] = "Sessions";
@@ -68,10 +68,10 @@ else if (TempData["ErrorMessage"] != null)
                                     <i class="bi bi-hourglass-split text-primary-color me-2"></i>
                                     <strong>Duration:</strong> @session.Duration
                                 </div>
-                                <div class="info-item">
-                                    <i class="bi bi-people text-primary-color me-2"></i>
-                                    <strong>Capacity:</strong> @session.AvailableSlots/@session.Capacity slots
-                                </div>
+                                    <div class="info-item">
+                                        <i class="bi bi-people text-primary-color me-2"></i>
+                                        <strong>Capacity:</strong> @(session.Capacity - session.AvailableSlots)/@session.Capacity slots
+                                    </div>
                             </div>
                         </div>
                         <div class="card-footer bg-white border-0">
