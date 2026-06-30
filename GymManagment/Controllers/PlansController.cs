@@ -37,7 +37,7 @@ public class PlansController : Controller
         var result = await _planService.GetPlanToUpdateAsync(id, ct);
         if (!result.success)
         {
-            TempData["ErrorMessage"] = "Plan Not Found";
+            TempData["ErrorMessage"] = result.error ?? "Plan Not Found";
             return RedirectToAction(nameof(Index));
         }
         return View(result.value);
