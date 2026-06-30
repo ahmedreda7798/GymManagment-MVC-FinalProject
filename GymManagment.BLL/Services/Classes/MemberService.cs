@@ -99,19 +99,12 @@ public class MemberService : IMemberService
         var member = await memberRepo.GetByIdAsync(id, ct);
         if (member == null) return Result.NotFound("Member not found.");
 
-        // Check for duplicate email (exclude the current member)
-        if (member.Email != model.Email)
-        {
-            var emailExists = await memberRepo.ExistsAsync(m => m.Email == model.Email, ct);
-            if (emailExists) return Result.Validation("This email address is already registered.");
-        }
 
-        // Check for duplicate phone (exclude the current member)
-        if (member.Phone != model.Phone)
-        {
-            var phoneExists = await memberRepo.ExistsAsync(m => m.Phone == model.Phone, ct);
-            if (phoneExists) return Result.Validation("This phone number is already registered.");
-        }
+        var emailExists = await memberRepo.ExistsAsync(m => m.Email == model.Email && m.Id != id);
+        if (emailExists) return Result.Validation("This email address is already registered.");
+        var phoneExists = await memberRepo.ExistsAsync(m => m.Phone == model.Phone && m.Id != id);
+        if (phoneExists) return Result.Validation("This phone number is already registered.");
+
 
         _mapper.Map(model, member);
         member.UpdatedAt = DateTime.Now;
