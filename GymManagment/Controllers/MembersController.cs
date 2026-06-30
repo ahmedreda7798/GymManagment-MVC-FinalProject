@@ -109,7 +109,7 @@ public class MembersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["ErrorMessage"] = result.error;
+        ModelState.AddModelError(result.field ?? string.Empty, result.error!);
         return View(nameof(Create), model);
     }
     #endregion
@@ -150,7 +150,7 @@ public class MembersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        ModelState.AddModelError(string.Empty, result.error!);
+        ModelState.AddModelError(result.field ?? string.Empty, result.error!);
 
         return View(model);
     }

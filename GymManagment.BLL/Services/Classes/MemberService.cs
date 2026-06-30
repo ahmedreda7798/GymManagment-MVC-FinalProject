@@ -37,11 +37,11 @@ public class MemberService : IMemberService
 
         // Check if email already exists
         var emailExists = await _unitOfWork.GetRepository<Member>().ExistsAsync(m => m.Email == model.Email, ct);
-        if (emailExists) return Result.Validation("This email address is already registered.");
+        if (emailExists) return Result.Validation("This email address is already registered.", nameof(model.Email));
 
         // Check if phone already exists
         var phoneExists = await _unitOfWork.GetRepository<Member>().ExistsAsync(m => m.Phone == model.Phone, ct);
-        if (phoneExists) return Result.Validation("This phone number is already registered.");
+        if (phoneExists) return Result.Validation("This phone number is already registered.", nameof(model.Phone));
 
         // Else Add Member and Return Success
         var member = _mapper.Map<Member>(model);
@@ -101,9 +101,9 @@ public class MemberService : IMemberService
 
 
         var emailExists = await memberRepo.ExistsAsync(m => m.Email == model.Email && m.Id != id);
-        if (emailExists) return Result.Validation("This email address is already registered.");
+        if (emailExists) return Result.Validation("This email address is already registered.", nameof(model.Email));
         var phoneExists = await memberRepo.ExistsAsync(m => m.Phone == model.Phone && m.Id != id);
-        if (phoneExists) return Result.Validation("This phone number is already registered.");
+        if (phoneExists) return Result.Validation("This phone number is already registered.", nameof(model.Phone));
 
 
         _mapper.Map(model, member);
