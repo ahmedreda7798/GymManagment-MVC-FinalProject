@@ -96,7 +96,7 @@ public class SessionService : ISessionService
             StartDate = s.StartDate,
             EndDate = s.EndDate
 
-        });
+        }).ToList();
         foreach (var session in sessionViewModels)
         {
             session.AvailableSlots = session.Capacity - await sessionRepo.GetCountOfBookedSlotsAsync(session.Id, ct);

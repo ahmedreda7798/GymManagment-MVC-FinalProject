@@ -126,7 +126,7 @@ public class MemberService : IMemberService
         var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(memberId, ct);
         if (member == null) return Result.NotFound("Member Not Found.");
 
-        var hasFutureBookings = await _unitOfWork.GetRepository<Booking>().ExistsAsync(b => b.MemberId == memberId && b.Session.StartDate > DateTime.Now, ct); //Bad Behaviour : Session is a related data
+        var hasFutureBookings = await _unitOfWork.GetRepository<Booking>().ExistsAsync(b => b.MemberId == memberId && b.Session.StartDate > DateTime.Now, ct); 
         if (hasFutureBookings) return Result.Fail("Cannot delete members with active bookings.");
 
         _unitOfWork.GetRepository<Member>().Delete(member);
