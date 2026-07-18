@@ -62,10 +62,10 @@ public class SessionService : ISessionService
             return Result.NotFound("Category not found");
         }
 
-        var isValid = Enum.TryParse<Specialty>(category?.Name, true, out var categorySpeciality);
+        var isValid = Enum.TryParse<Specialty>(category?.Name, ignoreCase: true, out var categorySpeciality);
         if (!isValid || trainer?.Specialty != categorySpeciality)
         {
-            return Result.Validation("Trainer Specialty must match Session Category");
+            return Result.Validation("Trainer Specialty must match Session Category" ,nameof(model.CategoryId));
         }
 
 
