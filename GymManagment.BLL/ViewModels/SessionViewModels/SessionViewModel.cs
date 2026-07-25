@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GymManagment.BLL.Common;
 
 namespace GymManagment.BLL.ViewModels.SessionViewModels;
 public class SessionViewModel
@@ -24,9 +25,9 @@ public class SessionViewModel
     {
         get
         {
-            if (StartDate > DateTime.Now)
+            if (StartDate > EgyptDateTime.Now)
                 return "Upcoming";
-            else if (StartDate <= DateTime.Now && EndDate >= DateTime.Now)
+            else if (StartDate <= EgyptDateTime.Now && EndDate >= EgyptDateTime.Now)
                 return "Ongoing";
             else
                 return "Completed";

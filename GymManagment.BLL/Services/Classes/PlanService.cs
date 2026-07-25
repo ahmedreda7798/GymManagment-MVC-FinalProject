@@ -87,7 +87,7 @@ public class PlanService : IPlanService
             return Result.Validation("Cannot deactivate plan with active memberships");
 
         plan.IsActive = !plan.IsActive;
-        plan.UpdatedAt = DateTime.Now;
+        plan.UpdatedAt = EgyptDateTime.Now;
         _unitOfWork.GetRepository<Plan>().Update(plan);
         var result = await _unitOfWork.SaveChangesAsync(ct);
         return result > 0 ? Result.OK() :Result.Fail("Cannot Deactivate The Plan ");
@@ -102,7 +102,7 @@ public class PlanService : IPlanService
 
         //Ignore PlanName update as per business rule
         _mapper.Map(model, plan);
-        plan.UpdatedAt = DateTime.Now;
+        plan.UpdatedAt = EgyptDateTime.Now;
 
         _unitOfWork.GetRepository<Plan>().Update(plan);
         var result = await _unitOfWork.SaveChangesAsync(ct);
@@ -112,7 +112,7 @@ public class PlanService : IPlanService
     #region Helper Method
     private async Task<bool> HasActiveMembershipsAsync(int planId, CancellationToken ct)
     {
-        return await _unitOfWork.GetRepository<Membership>().ExistsAsync(m => m.PlanId == planId && m.EndDate > DateTime.Now, ct);
+        return await _unitOfWork.GetRepository<Membership>().ExistsAsync(m => m.PlanId == planId && m.EndDate > EgyptDateTime.Now, ct);
     }
     #endregion
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using GymManagment.BLL.Common;
 using GymManagment.BLL.Services.Interfaces;
 using GymManagment.BLL.ViewModels.MemberShipViewModels;
@@ -36,7 +36,7 @@ public class MemberShipService : IMemberShipService
 
         //Member Should has only one active membership
         var HasActiveMembership = await _unitOfWork.MemberShipRepository
-            .ExistsAsync(m => m.MemberId == model.MemberId && m.EndDate > DateTime.Now);
+            .ExistsAsync(m => m.MemberId == model.MemberId && m.EndDate > EgyptDateTime.Now);
 
         if (HasActiveMembership) return Result.Validation("Member Already Has an Active MemberShip");
 
@@ -44,8 +44,8 @@ public class MemberShipService : IMemberShipService
         {
             MemberId = model.MemberId,
             PlanId = model.PlanId,
-            CreatedAt = DateTime.Now,
-            EndDate = (model.StartDate?? DateTime.Now).AddDays(plan.DurationDays) 
+            CreatedAt = EgyptDateTime.Now,
+            EndDate = (model.StartDate?? EgyptDateTime.Now).AddDays(plan.DurationDays) 
         };
          _unitOfWork.MemberShipRepository.Add(membership);
         var result = await _unitOfWork.SaveChangesAsync(ct);
@@ -56,7 +56,7 @@ public class MemberShipService : IMemberShipService
     public async Task<Result> DeleteActiveMemberShipAsync(int MemberId, CancellationToken ct = default)
     {
         var active = await  _unitOfWork.MemberShipRepository
-            .FirstOrDefaultAsync(ms => ms.MemberId == MemberId &&  ms.EndDate > DateTime.UtcNow,trackin : true ,ct:ct);
+            .FirstOrDefaultAsync(ms => ms.MemberId == MemberId &&  ms.EndDate > EgyptDateTime.Now,trackin : true ,ct:ct);
 
         if (active == null)   return Result.NotFound("No Active MemberShip For This Member");
         _unitOfWork.MemberShipRepository.Delete(active);
@@ -66,7 +66,7 @@ public class MemberShipService : IMemberShipService
 
     public async Task<IEnumerable<MemberShipViewModel>> GetAllMemberShipsAsync(CancellationToken ct = default)
     {
-        var activeMemberships = await _unitOfWork.MemberShipRepository.GelAllMemberShipsWithMembersAndPlansAsync(m => m.EndDate > DateTime.UtcNow, ct: ct);
+        var activeMemberships = await _unitOfWork.MemberShipRepository.GelAllMemberShipsWithMembersAndPlansAsync(m => m.EndDate > EgyptDateTime.Now, ct: ct);
        return _mapper.Map<IEnumerable<MemberShipViewModel>>(activeMemberships);
     }
 

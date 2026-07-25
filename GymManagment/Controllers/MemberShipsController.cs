@@ -60,7 +60,7 @@ public class MemberShipsController : Controller
     private async Task PopulateDropDownAsync(CancellationToken ct)
     {
         ViewBag.Plans = new SelectList(await _memberShipService.GetPlansForDropDownAsync(ct), "Id", "Name");
-        ViewBag.Members = new SelectList(await _memberShipService.GetMembersForDropDownAsync(ct), "Id", "Name");
+        ViewBag.Members = new SelectList(await _memberShipService. GetMembersForDropDownAsync(ct), "Id", "Name");
     }
 
 }

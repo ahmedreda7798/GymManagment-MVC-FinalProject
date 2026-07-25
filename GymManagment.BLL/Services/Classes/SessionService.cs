@@ -41,7 +41,7 @@ public class SessionService : ISessionService
         //Trainer must be free in that time slot — no double-booking 
         #endregion
         var startAfterEnd = model.EndDate <= model.StartDate;
-        var startInPast = model.StartDate <= DateTime.Now;
+        var startInPast = model.StartDate <= EgyptDateTime.Now;
         var capacityIsNegativeOrOutRange = model.Capacity <= 0 || model.Capacity > 25;
 
         //var errors = new Dictionary<string, string>();
@@ -136,7 +136,7 @@ public class SessionService : ISessionService
             return Result<UpdateSessionViewModel>.NotFound("Session Not Found");
 
         //Cannot edit an Ongoing or Completed session — only Upcoming sessions are mutable
-        if (session.StartDate <= DateTime.Now)
+        if (session.StartDate <= EgyptDateTime.Now)
             return Result<UpdateSessionViewModel>.Validation("Cannot Update Session That Has Already Started");
 
         //Cannot edit a Session that has bookings — if there are existing bookings, changing the session details could cause issues for those who have booked
@@ -155,7 +155,7 @@ public class SessionService : ISessionService
         if (session == null)
             return Result.NotFound("Session Not Found");
 
-        if (session.StartDate <= DateTime.Now)
+        if (session.StartDate <= EgyptDateTime.Now)
             return Result.Validation("Cannot Edit Session That Has Already Started");
 
         if (model.EndDate <= model.StartDate)
@@ -164,7 +164,7 @@ public class SessionService : ISessionService
         if (bookedCount > 0)
             return Result.Validation("Cannot Edit Session That Has Bookings");
 
-        if (model.StartDate <= DateTime.Now)
+        if (model.StartDate <= EgyptDateTime.Now)
             return Result.Validation("Start Date Must Be In The Future");
 
         var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIdAsync(model.TrainerId, ct);
@@ -183,7 +183,7 @@ public class SessionService : ISessionService
         }
 
         _mapper.Map(model, session);
-        session.UpdatedAt = DateTime.Now;
+        session.UpdatedAt = EgyptDateTime.Now;
         _unitOfWork.SessionRepository.Update(session);
         var result = await _unitOfWork.SaveChangesAsync(ct);
         return result > 0 ? Result.OK() : Result.Fail("Failed To Update Session");
@@ -197,7 +197,7 @@ public class SessionService : ISessionService
             return Result.NotFound("Session Not Found");
 
         // Cannot delete an Ongoing or Upcoming session
-        if (session.EndDate >= DateTime.Now)
+        if (session.EndDate >= EgyptDateTime.Now)
             return Result.Validation("Cannot Delete Session That Has Not Ended Yet");
 
         // 1. Fetch and delete all bookings related to this session first to avoid database conflicts

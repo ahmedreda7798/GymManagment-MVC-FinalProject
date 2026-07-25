@@ -107,7 +107,7 @@ public class MemberService : IMemberService
 
 
         _mapper.Map(model, member);
-        member.UpdatedAt = DateTime.Now;
+        member.UpdatedAt = EgyptDateTime.Now;
 
         memberRepo.Update(member);
         var result = await _unitOfWork.SaveChangesAsync(ct);
@@ -126,7 +126,7 @@ public class MemberService : IMemberService
         var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(memberId, ct);
         if (member == null) return Result.NotFound("Member Not Found.");
 
-        var hasFutureBookings = await _unitOfWork.GetRepository<Booking>().ExistsAsync(b => b.MemberId == memberId && b.Session.StartDate > DateTime.Now, ct); 
+        var hasFutureBookings = await _unitOfWork.GetRepository<Booking>().ExistsAsync(b => b.MemberId == memberId && b.Session.StartDate > EgyptDateTime.Now, ct); 
         if (hasFutureBookings) return Result.Fail("Cannot delete members with active bookings.");
 
         _unitOfWork.GetRepository<Member>().Delete(member);

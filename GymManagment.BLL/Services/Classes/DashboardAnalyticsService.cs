@@ -23,7 +23,7 @@ public class DashBoardAnalyticsService : IDashBoardAnalyticsService
     }
     public async Task<Result<DashboardViewModel>> GetDashBoardAnalyticsAsync(CancellationToken ct = default)
     {
-        var now = DateTime.Now;
+        var now = EgyptDateTime.Now;
 
         var model = new DashboardViewModel()
         {

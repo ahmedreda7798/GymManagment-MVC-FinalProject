@@ -27,7 +27,7 @@ public class BookingService : IBookingService
     {
         var session = await _unitOfWork.SessionRepository.GetByIdAsync(sessionId, ct);
         if (session == null) return Result.NotFound("Session Not Found");
-        if (session.StartDate <= DateTime.Now) return Result.Validation("Cannot Cancel Booking For Session That Already Started");
+        if (session.StartDate <= EgyptDateTime.Now) return Result.Validation("Cannot Cancel Booking For Session That Already Started");
 
         var booking = await _unitOfWork.BookingRepository
             .FirstOrDefaultAsync(b => b.SessionId == sessionId && b.MemberId == memberId, trackin: true, ct);
@@ -44,9 +44,9 @@ public class BookingService : IBookingService
         var session = await _unitOfWork.SessionRepository.GetByIdAsync(model.SessionId, ct);
         if (session == null) return Result.NotFound("Session Not Found");
         //session should not be started
-        if (session.StartDate <= DateTime.Now) return Result.Validation("Cannot Book a Session That Has Already Started");
+        if (session.StartDate <= EgyptDateTime.Now) return Result.Validation("Cannot Book a Session That Has Already Started");
         //member should have  -active- membership
-        var memberHasActiveMembership = await _unitOfWork.MemberShipRepository.ExistsAsync(ms => ms.MemberId == model.MemberId && ms.EndDate > DateTime.UtcNow, ct);
+        var memberHasActiveMembership = await _unitOfWork.MemberShipRepository.ExistsAsync(ms => ms.MemberId == model.MemberId && ms.EndDate > EgyptDateTime.Now, ct);
         if (!memberHasActiveMembership ) return Result.Validation("Member Does Not Have an Active MemberShip");
         //member should book a session only once
         var alreadyBooked = await _unitOfWork.BookingRepository
@@ -62,7 +62,7 @@ public class BookingService : IBookingService
             MemberId = model.MemberId,
             SessionId = session.Id,
             IsAttended = false,
-            CreatedAt = DateTime.Now
+            CreatedAt = EgyptDateTime.Now
 
         });
         var result = await _unitOfWork.SaveChangesAsync(ct);
@@ -71,7 +71,7 @@ public class BookingService : IBookingService
 
     public async Task<IEnumerable<SessionViewModel>> GetAllSessionsAsync(CancellationToken ct = default)
     {
-        var sessions = await _unitOfWork.SessionRepository.GetAllSessionsWithTrainerAndCategory(s => s.EndDate >= DateTime.UtcNow,ct);
+        var sessions = await _unitOfWork.SessionRepository.GetAllSessionsWithTrainerAndCategory(s => s.EndDate >= EgyptDateTime.Now,ct);
      
 
         if (!sessions.Any())
@@ -109,7 +109,8 @@ public class BookingService : IBookingService
             MemberId = b.MemberId,
             SessionId = b.SessionId,
             MemberName = b.Member.Name,
-            BookingDate = b.CreatedAt.ToString("dd-MM-yyyy HH:mm")
+            BookingDate = b.CreatedAt.ToString("dd-MM-yyyy HH:mm"),
+            IsAttended = b.IsAttended
         }).ToList();
     }
 
@@ -133,7 +134,7 @@ public class BookingService : IBookingService
         if (booking == null)
             return Result.NotFound("Booking Not Found");
         booking.IsAttended = true;
-        booking.UpdatedAt = DateTime.Now;
+        booking.UpdatedAt = EgyptDateTime.Now;
         _unitOfWork.BookingRepository.Update(booking);
         var result = await _unitOfWork.SaveChangesAsync(ct);
         return result > 0 ? Result.OK() : Result.Fail("Failed To Mark As Attended");

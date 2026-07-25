@@ -110,7 +110,7 @@ public class TrainerService : ITrainerService
         var trainerRepo = _unitOfWork.GetRepository<Trainer>();
         var trainer = await trainerRepo.GetByIdAsync(id, ct);
         if (trainer == null) return ServiceResult.Failure("NotFound", "Trainer Not Found");
-        var hasCurrentOrFutureSessions = await _unitOfWork.GetRepository<Session>().ExistsAsync(s => s.TrainerId == trainer.Id && s.EndDate > DateTime.Now);
+        var hasCurrentOrFutureSessions = await _unitOfWork.GetRepository<Session>().ExistsAsync(s => s.TrainerId == trainer.Id && s.EndDate > EgyptDateTime.Now);
         if (hasCurrentOrFutureSessions) return ServiceResult.Failure("TrainerId", "Cannot Delete Trainer With Ongoing Or Upcoming Sessions");
         
         trainerRepo.Delete(trainer);

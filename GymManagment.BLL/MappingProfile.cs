@@ -1,4 +1,5 @@
 using AutoMapper;
+using GymManagment.BLL.Common;
 using GymManagment.BLL.ViewModels.MemberShipViewModels;
 using GymManagment.BLL.ViewModels.MemberViewModels;
 using GymManagment.BLL.ViewModels.PlanViewModels;
@@ -38,7 +39,7 @@ public class MappingProfile : Profile
                if (src.Memberships != null)
                {
                    var activeMembership = src.Memberships
-                       .FirstOrDefault(ms => ms.EndDate > DateTime.Now);
+                       .FirstOrDefault(ms => ms.EndDate > EgyptDateTime.Now);
 
                    if (activeMembership != null)
                    {
