@@ -5,6 +5,7 @@ using GymManagment.DAL.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GymManagment.PL.Controllers;
@@ -167,6 +168,123 @@ public class AccountController : Controller
         }
 
         return View(model);
+    }
+    #endregion
+
+
+    #region External Login (Google)
+
+    // POST: /Account/ExternalLogin
+    // Initiates the OAuth challenge and redirects the browser to the external provider (Google)
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+    {
+        // Define the callback URL that Google will redirect back to after user consent
+        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+
+        // Configure the authentication properties with provider and return URL
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+
+        // Issue the challenge to trigger Google login page
+        return Challenge(properties, provider);
+    }
+
+    // GET: /Account/ExternalLoginCallback
+    // Handles the response sent back from the external provider
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+    {
+        returnUrl = (returnUrl != null && Url.IsLocalUrl(returnUrl)) ? returnUrl : Url.Content("~/");
+
+        // 1. Error returned directly from Google
+        if (remoteError != null)
+        {
+            _logger.LogError($"Error from external provider: {remoteError}");
+            TempData["ExternalError"] = $"Error from Google: {remoteError}";
+            return RedirectToAction(nameof(Login));
+        }
+
+        // 2. Failed to retrieve external payload
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info == null)
+        {
+            _logger.LogError("Failed to load external login info.");
+            TempData["ExternalError"] = "Error loading external login information.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        // Case 1: Account already linked
+        var signInResult = await _signInManager.ExternalLoginSignInAsync(
+            info.LoginProvider,
+            info.ProviderKey,
+            isPersistent: false,
+            bypassTwoFactor: true);
+
+        if (signInResult.Succeeded)
+        {
+            _logger.LogInformation($"User logged in successfully with {info.LoginProvider}.");
+            return LocalRedirect(returnUrl);
+        }
+
+        if (signInResult.IsLockedOut)
+        {
+            _logger.LogWarning("External login attempt for a locked-out account.");
+            TempData["ExternalError"] = "This account is currently locked out.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        // Extract email claim
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrEmpty(email))
+        {
+            TempData["ExternalError"] = "Email claim was not provided by Google.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        var existingUser = await _userManager.FindByEmailAsync(email);
+
+        // Case 2: User exists locally -> Link Google to existing user
+        if (existingUser != null)
+        {
+            var addLoginResult = await _userManager.AddLoginAsync(existingUser, info);
+            if (addLoginResult.Succeeded)
+            {
+                await _signInManager.SignInAsync(existingUser, isPersistent: true);
+                return LocalRedirect(returnUrl);
+            }
+
+            TempData["ExternalError"] = string.Join(" | ", addLoginResult.Errors.Select(e => e.Description));
+            return RedirectToAction(nameof(Login));
+        }
+
+        // Case 3: Completely new user -> Create local account and link Google
+        var givenName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "User";
+        var surname = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? "Member";
+
+        var newUser = new ApplicationUser
+        {
+            UserName = email.Split('@')[0] + "_" + Guid.NewGuid().ToString("N")[..4],
+            Email = email,
+            FirstName = givenName,
+            LastName = surname,
+            EmailConfirmed = true
+        };
+
+        var identityResult = await _userManager.CreateAsync(newUser);
+        if (identityResult.Succeeded)
+        {
+            await _userManager.AddToRoleAsync(newUser, "User");
+            await _userManager.AddLoginAsync(newUser, info);
+            await _signInManager.SignInAsync(newUser, isPersistent: true);
+
+            return LocalRedirect(returnUrl);
+        }
+
+        TempData["ExternalError"] = string.Join(" | ", identityResult.Errors.Select(e => e.Description));
+        return RedirectToAction(nameof(Login));
     }
     #endregion
 

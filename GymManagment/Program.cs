@@ -25,7 +25,7 @@ namespace GymManagment
 
             #region Framework Services
             builder.Services.AddControllersWithViews();
-            
+
             builder.Services.AddDbContext<GymDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -45,6 +45,17 @@ namespace GymManagment
             {
                 opt.ExpireTimeSpan = TimeSpan.FromDays(7);
             });
+            builder.Services.AddAuthentication()
+                  .AddGoogle(googleOptions =>
+                  {
+                      googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+                      googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+                      googleOptions.Events.OnRedirectToAuthorizationEndpoint = context =>
+                      {
+                          context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+                          return Task.CompletedTask;
+                      };
+                  });
 
             builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));
             #endregion

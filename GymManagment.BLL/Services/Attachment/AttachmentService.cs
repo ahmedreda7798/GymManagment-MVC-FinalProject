@@ -55,7 +55,7 @@ public class AttachmentService : IAttachmentService
         if (fileStream == null || !fileStream.CanRead)
             return Result<string>.Validation("File stream is null or unreadable.");
 
-        if (fileName.Length == 0) //file stream is empty [0 bytes]
+        if (fileStream.Length == 0) //file stream is empty [0 bytes]
             return Result<string>.Validation("File strem must not be empty.");
 
         //Check the size — reject anything over 5 MB.
